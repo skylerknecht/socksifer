@@ -146,6 +146,8 @@ class SocksClient:
         except socket.error as e:
             self.notify(f"Could not send sock_connect: {e}", 'ERROR')
             return
+        if not bind_addr:
+            return
         self.stream()
 
     def handle_socks_downstream_results(self, results):
@@ -163,7 +165,6 @@ class SocksClient:
 class SocksServer:
     proxy = True
     socks_client = namedtuple('SocksClient', ['thread', 'socks_client'])
-
 
     def __init__(self, address, port, notify):
         self.address = address

@@ -9,7 +9,7 @@ import time
 server_id = ''
 sio = socketio.Client()
 socks_connections = {}
-client_lock = threading.Lock()
+upstream_buffer = {}
 
 
 
@@ -40,37 +40,36 @@ def socks(data):
     server_id = data['server_id']
 
 
+
 @sio.event
 def socks_upstream(data):
     global socks_connections
+    global upstream_buffer
     data = json.loads(data)
     client_id = data['client_id']
-    client = socks_connections[client_id]
-    try:
-        with client_lock:
-            client.sendall(base64_to_bytes(data['data']))
-    except:
-        return
+    upstream_buffer[client_id].append(base64_to_bytes(data['data']))
 
 
-def downstream(client_id):
+def stream(client_id):
+    global upstream_buffer
     while True:
-        time.sleep(0.0001)
         client = socks_connections[client_id]
-        r, w, e = select.select([client], [], [], 1)
+        r, w, e = select.select([client], [client], [])
+        if client in w and len(upstream_buffer[client_id]) > 0:
+            client.send(upstream_buffer[client_id].pop(0))
         if client in r:
             try:
-                with client_lock:
-                    downstream_data = client.recv(4096)
+                downstream_data = client.recv(4096)
                 if len(downstream_data) <= 0:
-                    return
+                    break
                 socks_downstream_result = json.dumps({
                     'client_id': client_id,
                     'data': bytes_to_base64(downstream_data)
                 })
                 sio.emit('socks_downstream_results', socks_downstream_result)
             except:
-                return
+                break
+
 
 @sio.event
 def socks_connect(data):
@@ -81,7 +80,7 @@ def socks_connect(data):
     port = data['port']
     client_id = data['client_id']
     socks_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socks_connection.settimeout(5)
+    socks_connection.settimeout(1.0)
     rep = None
     try:
         socks_connection.connect((address, port))
@@ -107,6 +106,7 @@ def socks_connect(data):
         })
     else:
         socks_connections[client_id] = socks_connection
+        upstream_buffer[client_id] = []
         bind_addr = socks_connection.getsockname()[0]
         bind_port = socks_connection.getsockname()[1]
         results = json.dumps({
@@ -117,18 +117,22 @@ def socks_connect(data):
             'client_id': client_id
         })
     sio.emit('socks_connect_results', results)
-    threading.Thread(target=downstream, daemon=True, args=(client_id,)).start()
+    threading.Thread(target=stream, daemon=True, args=(client_id,)).start()
 
 
-sio.connect('http://127.0.0.1:1337/', auth='rgASTytIsa')
+sio.connect('http://127.0.0.1:1337/', auth='DbIyIDGPBO')
 
 while True:
-    time.sleep(0.001)
-    if server_id:
-        data = json.dumps({
-            'server_id': server_id
-        })
-        sio.emit('socks_request_for_data', data)
+    time.sleep(0.1)
+    try:
+        if server_id:
+            data = json.dumps({
+                'server_id': server_id
+            })
+            sio.emit('socks_request_for_data', data)
+    except KeyboardInterrupt:
+        sio.disconnect()
+        break
 
 
 

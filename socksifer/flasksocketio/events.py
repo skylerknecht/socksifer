@@ -20,18 +20,20 @@ class Events:
         sio_server.on_event('socks_connect_results', self.socks_connect_results)
         sio_server.on_event('socks_downstream_results', self.socks_downstream_results)
 
-    def connect(self, authentication_key: str):
+    def connect(self, auth: str = None, namespace='/socksifer'):
         client_ip = request.remote_addr
         command_line_interface.notify(f'{client_ip} attempting to authenticate', 'INFORMATION')
-        if authentication_key != self.authentication_key:
-            command_line_interface.notify(f'{client_ip} failed to authenticate with `{authentication_key}`', 'ERROR')
-            disconnect()
-            return
+        # if authentication_key != self.authentication_key:
+        #     command_line_interface.notify(f'{client_ip} failed to authenticate with `{authentication_key}`', 'ERROR')
+        #     disconnect()
+        #     return
         command_line_interface.notify(f'{client_ip} successfully authenticated.', 'SUCCESS')
-        server_id = socks_server_manager.create_socks_server('127.0.0.1', random.randint(9050, 9100), command_line_interface.notify)
+        server_id = socks_server_manager.create_socks_server('127.0.0.1', random.randint(9050, 9100),
+                                                             command_line_interface.notify)
         emit('socks', json.dumps({
-            'server_id': server_id
-        }))
+                    'server_id': server_id
+                }),
+             broadcast=False)
 
     def json_event_handler(handler_function):
         @wraps(handler_function)
@@ -52,7 +54,8 @@ class Events:
     def socks(self, data):
         socks_tasks = socks_server_manager.get_socks_tasks(data['server_id'])
         for socks_task in socks_tasks:
-            emit(socks_task.event, socks_task.data, room=request.sid)
+            print(f'sending {socks_task.event} to {data["server_id"]}')
+            emit(socks_task.event, socks_task.data, broadcast=False)  # ToDo: This still sends to everyone
 
     @json_event_handler
     def socks_connect_results(self, results):
@@ -69,5 +72,3 @@ class Events:
             args=('socks_downstream', results,),
             daemon=True
         ).start()
-
-

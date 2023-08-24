@@ -33,6 +33,7 @@ class SocksClient:
         }
         self.client = client
         self.client_id = string_identifier()
+        self.downstream_buffer = []
         self.notify = notify
         self.socks_task = namedtuple('SocksTask', ['event', 'data'])
         self.socks_tasks = []
@@ -85,7 +86,7 @@ class SocksClient:
         self.client.sendall(bytes([self.SOCKS_VERSION, 0]))
         return True
 
-    def proxy(self):
+    def parse_socks_connect(self):
         if not self.negotiate_method():
             display('Socks client failed to negotiate method.', 'ERROR')
             self.client.close()
@@ -105,14 +106,18 @@ class SocksClient:
             'port': port,
             'client_id': self.client_id
         })
+        self.notify('Sending socks_connect request', 'INFORMATION')
         self.socks_tasks.append(self.socks_task('socks_connect', data))
 
     def stream(self):
         self.streaming = True
-        print('streaming..')
+        self.notify('Streaming waiting for client to be readable', 'INFORMATION')
         while self.streaming:
             r, w, e = select.select([self.client], [self.client], [])
-            while self.client in r:
+            if self.client in w and len(self.downstream_buffer) > 0:
+                self.client.send(self.downstream_buffer.pop(0))
+                continue
+            if self.client in r:
                 try:
                     data = self.client.recv(4096)
                     if len(data) <= 0:
@@ -124,7 +129,7 @@ class SocksClient:
                     self.socks_tasks.append(self.socks_task('socks_upstream', socks_upstream_task))
                 except Exception as e:
                     break
-        print('not streaming..')
+        self.notify('Closing out the stream', 'INFORMATION')
         self.streaming = False
         self.client.close()
 
@@ -133,55 +138,61 @@ class SocksClient:
         rep = results['rep']
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None
+        self.notify(f'Received socks_connect results: {results}', 'INFORMATION')
+        print(self.client_id)
         try:
             self.client.sendall(self.generate_reply(atype, rep, bind_addr, bind_port))
+            self.notify('Sent socks_connect', 'SUCCESS')
         except socket.error as e:
-            print("Could not send sock_connect:", e)
+            self.notify(f"Could not send sock_connect: {e}", 'ERROR')
             return
         self.stream()
 
     def handle_socks_downstream_results(self, results):
+        #self.notify('Received downstream results', 'INFORMATION')
         try:
-            self.client.sendall(base64_to_bytes(results['data']))
-        except:
+            data = base64_to_bytes(results['data'])
+            if len(data) == 0:
+                return
+            self.downstream_buffer.append(data)
+        except socket.error as e:
+            self.notify(f"Failed to send downstream results {e}", 'ERROR')
             return
 
 
 class SocksServer:
     proxy = True
     socks_client = namedtuple('SocksClient', ['thread', 'socks_client'])
-    socks_clients = []
+
 
     def __init__(self, address, port, notify):
         self.address = address
         self.notify = notify
         self.port = port
         self.server_id = string_identifier()
+        self.socks_clients = []
 
     def listen_for_clients(self):
         socks_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             socks_server.bind((self.address, self.port))
+            self.notify(f'Successfully created socks server: {self.address}:{self.port} {self.server_id}', 'SUCCESS')
         except Exception as e:
             self.notify(f'Failed to start socks server', 'ERROR')
             self.proxy = False
         socks_server.settimeout(1.0)
         socks_server.listen(5)
-        if self.proxy:
-            self.notify(f'Successfully created socks server: {self.address}:{self.port}', 'SUCCESS')
         while self.proxy:
             try:
                 client, addr = socks_server.accept()
             except socket.error as e:
                 continue
             socks_client = SocksClient(client, self.notify)
-            socks_client_thread = threading.Thread(target=socks_client.proxy, daemon=True)
-            socks_client_thread.start()
-            self.socks_clients.append(self.socks_client(socks_client_thread, socks_client))
+            socks_client.parse_socks_connect()
+            self.socks_clients.append(socks_client)
         socks_server.close()
 
     def shutdown(self):
         for socks_client in self.socks_clients:
-            socks_client.socks_client.stream = False
-            socks_client.thread.join()
+            socks_client.stream = False
         self.proxy = False

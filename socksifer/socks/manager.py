@@ -1,3 +1,4 @@
+
 import threading
 
 from collections import namedtuple
@@ -37,17 +38,23 @@ class SocksManager:
     def handle_socks_task_results(self, method, results):
         for socks_server in self.socks_servers.values():
             for socks_client in socks_server.socks_server.socks_clients:
-                if socks_client.socks_client.client_id == results['client_id']:
+                if socks_client.client_id == results['client_id']:
                     if method == 'socks_connect':
-                        socks_client.socks_client.handle_socks_connect_results(results)
+                        socks_client.handle_socks_connect_results(results)
                     if method == 'socks_downstream':
-                        socks_client.socks_client.handle_socks_downstream_results(results)
+                        socks_client.handle_socks_downstream_results(results)
 
     def get_socks_tasks(self, server_id):
+
         sent_socks_task = []
         for socks_server in self.socks_servers.values():
+
             if socks_server.socks_server.server_id == server_id:
                 for socks_client in socks_server.socks_server.socks_clients:
-                    while socks_client.socks_client.socks_tasks:
-                        sent_socks_task.append(socks_client.socks_client.socks_tasks.pop(0))
+                    if socks_client.socks_tasks:
+                        print(self.socks_servers.values())
+                        print(server_id)
+                        print(socks_client.socks_tasks)
+                    while socks_client.socks_tasks:
+                        sent_socks_task.append(socks_client.socks_tasks.pop(0))
         return sent_socks_task

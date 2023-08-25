@@ -5,6 +5,7 @@ import threading
 from flask import request
 from flask_socketio import disconnect, emit
 from functools import wraps
+from socksifer import get_debug_level
 from socksifer import socketio as sio_server
 from socksifer.cli import command_line_interface
 from socksifer.output import display
@@ -13,21 +14,16 @@ from socksifer.socks import socks_server_manager
 
 class Events:
 
-    def __init__(self, authentication_key):
-        self.authentication_key = authentication_key
+    def __init__(self):
         sio_server.on_event('connect', self.connect)
         sio_server.on_event('socks_request_for_data', self.socks)
         sio_server.on_event('socks_connect_results', self.socks_connect_results)
         sio_server.on_event('socks_downstream_results', self.socks_downstream_results)
 
-    def connect(self, auth: str = None, namespace='/socksifer'):
+    def connect(self):
         client_ip = request.remote_addr
-        command_line_interface.notify(f'{client_ip} attempting to authenticate', 'INFORMATION')
-        # if authentication_key != self.authentication_key:
-        #     command_line_interface.notify(f'{client_ip} failed to authenticate with `{authentication_key}`', 'ERROR')
-        #     disconnect()
-        #     return
-        command_line_interface.notify(f'{client_ip} successfully authenticated.', 'SUCCESS')
+        if get_debug_level() >= 1: command_line_interface.notify(f'{client_ip} attempting to authenticate', 'INFORMATION')
+        if get_debug_level() >= 1: command_line_interface.notify(f'{client_ip} successfully authenticated.', 'SUCCESS')
         server_id = socks_server_manager.create_socks_server('127.0.0.1', random.randint(9050, 9100),
                                                              command_line_interface.notify)
         emit('socks', json.dumps({

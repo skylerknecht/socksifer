@@ -17,7 +17,7 @@ class CLI:
         self.prompt = self.PROMPT
 
     def listen_for_user_input(self):
-        display('Welcome to the Socksifer CLI, type help or ? to get started.')
+        display('Welcome to the Socksifer CLI, type help or ? to get started')
         while True:
             try:
                 with self.output_lock:

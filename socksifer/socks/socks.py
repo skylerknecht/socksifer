@@ -1,10 +1,9 @@
 import json
 import select
 import socket
-import threading
-import time
 
 from collections import namedtuple
+from socksifer import get_debug_level
 from socksifer.convert import bytes_to_base64, base64_to_bytes
 from socksifer.generate import string_identifier
 from socksifer.output import display
@@ -88,16 +87,16 @@ class SocksClient:
 
     def parse_socks_connect(self):
         if not self.negotiate_method():
-            display('Socks client failed to negotiate method.', 'ERROR')
+            display(f'Client {self.client_id} failed to negotiate method.', 'ERROR')
             self.client.close()
             return
         if not self.negotiate_cmd():
-            display('Socks client failed to negotiate cmd.', 'ERROR')
+            display(f'Client {self.client_id} failed to negotiate cmd.', 'ERROR')
             self.client.close()
             return
         atype, address, port = self.parse_address()
         if not address:
-            display('Socks client failed to negotiate address.', 'ERROR')
+            display(f'Client {self.client_id} failed to negotiate address.', 'ERROR')
             self.client.close()
             return
         data = json.dumps({
@@ -106,12 +105,13 @@ class SocksClient:
             'port': port,
             'client_id': self.client_id
         })
-        self.notify('Sending socks_connect request', 'INFORMATION')
+        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} sent socks_connect request for {address}:{str(port)}'
+                                         , 'INFORMATION')
         self.socks_tasks.append(self.socks_task('socks_connect', data))
 
     def stream(self):
         self.streaming = True
-        self.notify(f'Client {self.client_id } is streaming', 'INFORMATION')
+        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} is streaming', 'INFORMATION')
         while self.streaming:
             r, w, e = select.select([self.client], [self.client], [])
             if self.client in w and len(self.downstream_buffer) > 0:
@@ -129,7 +129,7 @@ class SocksClient:
                     self.socks_tasks.append(self.socks_task('socks_upstream', socks_upstream_task))
                 except Exception as e:
                     break
-        self.notify(f'Client {self.client_id } stopped streaming', 'INFORMATION')
+        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} stopped streaming', 'INFORMATION')
         self.streaming = False
         self.client.close()
 
@@ -138,26 +138,26 @@ class SocksClient:
         rep = results['rep']
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None
-        self.notify(f'Received socks_connect results: {results}', 'INFORMATION')
+        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} received socks_connect reply: {results}', 'INFORMATION')
         try:
             self.client.sendall(self.generate_reply(atype, rep, bind_addr, bind_port))
-            self.notify('Sent socks_connect', 'SUCCESS')
+            if get_debug_level() >= 1: self.notify(f'Client {self.client_id} sent socks_connect', 'SUCCESS')
         except socket.error as e:
-            self.notify(f"Could not send sock_connect: {e}", 'ERROR')
+            if get_debug_level() >= 1: self.notify(f'Client {self.client_id} could not send sock_connect: {e}', 'ERROR')
             return
         if not bind_addr:
             return
         self.stream()
 
     def handle_socks_downstream_results(self, results):
-        self.notify('Received downstream results', 'INFORMATION')
+        if get_debug_level() >= 2: self.notify('Received downstream results', 'INFORMATION')
         try:
             data = base64_to_bytes(results['data'])
             if len(data) == 0:
                 return
             self.downstream_buffer.append(data)
         except socket.error as e:
-            self.notify(f"Failed to send downstream results {e}", 'ERROR')
+            if get_debug_level() >= 1: self.notify(f"Failed to send downstream results {e}", 'ERROR')
             return
 
 
@@ -176,7 +176,7 @@ class SocksServer:
         socks_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             socks_server.bind((self.address, self.port))
-            self.notify(f'Successfully created socks server: {self.address}:{self.port} {self.server_id}', 'SUCCESS')
+            self.notify(f'{self.server_id} is listening on {self.address}:{self.port}', 'SUCCESS')
         except Exception as e:
             self.notify(f'Failed to start socks server', 'ERROR')
             self.proxy = False

@@ -1,16 +1,16 @@
-from .manager import CommandsManager
-from .create import Create
+from .debug import Debug
 from .exit import Exit
 from .list import List
+from .manager import CommandsManager
 from .shutdown import Shutdown
 
-create = Create()
+debug = Debug()
 exit = Exit()
 list = List()
 shutdown = Shutdown()
 
 commands = {
-    create.name: create,
+    debug.name: debug,
     exit.name: exit,
     list.name: list,
     shutdown.name: shutdown

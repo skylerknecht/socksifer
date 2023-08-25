@@ -5,6 +5,7 @@ import socket
 import socketio
 import threading
 import time
+import sys
 
 server_id = ''
 sio = socketio.Client()
@@ -38,7 +39,6 @@ def socks(data):
     global server_id
     data = json.loads(data)
     server_id = data['server_id']
-
 
 
 @sio.event
@@ -120,7 +120,11 @@ def socks_connect(data):
     threading.Thread(target=stream, daemon=True, args=(client_id,)).start()
 
 
-sio.connect('http://127.0.0.1:1337/', auth='DbIyIDGPBO')
+if len(sys.argv) != 2:
+    print(f'Incorrect arguments provided. Please run {sys.argv[0]} http://server-url:port/')
+    sys.exit()
+
+sio.connect(sys.argv[1])
 
 while True:
     time.sleep(0.1)
@@ -133,7 +137,3 @@ while True:
     except KeyboardInterrupt:
         sio.disconnect()
         break
-
-
-
-

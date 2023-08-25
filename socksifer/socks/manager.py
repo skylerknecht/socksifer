@@ -45,16 +45,10 @@ class SocksManager:
                         socks_client.handle_socks_downstream_results(results)
 
     def get_socks_tasks(self, server_id):
-
         sent_socks_task = []
         for socks_server in self.socks_servers.values():
-
             if socks_server.socks_server.server_id == server_id:
                 for socks_client in socks_server.socks_server.socks_clients:
-                    if socks_client.socks_tasks:
-                        print(self.socks_servers.values())
-                        print(server_id)
-                        print(socks_client.socks_tasks)
                     while socks_client.socks_tasks:
                         sent_socks_task.append(socks_client.socks_tasks.pop(0))
         return sent_socks_task

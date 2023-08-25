@@ -54,7 +54,6 @@ class Events:
     def socks(self, data):
         socks_tasks = socks_server_manager.get_socks_tasks(data['server_id'])
         for socks_task in socks_tasks:
-            print(f'sending {socks_task.event} to {data["server_id"]}')
             emit(socks_task.event, socks_task.data, broadcast=False)  # ToDo: This still sends to everyone
 
     @json_event_handler

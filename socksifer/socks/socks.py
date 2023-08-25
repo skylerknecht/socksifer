@@ -111,7 +111,7 @@ class SocksClient:
 
     def stream(self):
         self.streaming = True
-        self.notify('Streaming waiting for client to be readable', 'INFORMATION')
+        self.notify(f'Client {self.client_id } is streaming', 'INFORMATION')
         while self.streaming:
             r, w, e = select.select([self.client], [self.client], [])
             if self.client in w and len(self.downstream_buffer) > 0:
@@ -129,7 +129,7 @@ class SocksClient:
                     self.socks_tasks.append(self.socks_task('socks_upstream', socks_upstream_task))
                 except Exception as e:
                     break
-        self.notify('Closing out the stream', 'INFORMATION')
+        self.notify(f'Client {self.client_id } stopped streaming', 'INFORMATION')
         self.streaming = False
         self.client.close()
 
@@ -139,7 +139,6 @@ class SocksClient:
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None
         self.notify(f'Received socks_connect results: {results}', 'INFORMATION')
-        print(self.client_id)
         try:
             self.client.sendall(self.generate_reply(atype, rep, bind_addr, bind_port))
             self.notify('Sent socks_connect', 'SUCCESS')
@@ -151,7 +150,7 @@ class SocksClient:
         self.stream()
 
     def handle_socks_downstream_results(self, results):
-        #self.notify('Received downstream results', 'INFORMATION')
+        self.notify('Received downstream results', 'INFORMATION')
         try:
             data = base64_to_bytes(results['data'])
             if len(data) == 0:

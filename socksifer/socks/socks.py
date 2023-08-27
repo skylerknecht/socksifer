@@ -155,8 +155,13 @@ class SocksClient:
         if not bind_addr:
             return
         network_delay = time.time() - self.socks_connect_sent
-        if get_debug_level() >= 1: self.notify(f"The network delay is {network_delay:.6f} seconds", 'INFORMATION')
-        if get_debug_level() >= 1 and network_delay >= 1: self.notify(f"The network delay is high and may cause timeouts", 'WARN')
+        if network_delay < 0.1:
+            network_delay_notification = 'SUCCESS'
+        elif 0.1 >= network_delay < 1:
+            network_delay_notification = 'INFORMATION'
+        else:
+            network_delay_notification = 'WARN'
+        if get_debug_level() >= 1: self.notify(f"The network delay is {network_delay:.6f} seconds", network_delay_notification)
         self.stream()
 
     def handle_socks_downstream_results(self, results):

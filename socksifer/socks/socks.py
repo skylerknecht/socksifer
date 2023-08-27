@@ -193,7 +193,7 @@ class SocksServer:
             socks_server.bind((self.address, self.port))
             self.notify(f'{self.server_id} is listening on {self.address}:{self.port}', 'SUCCESS')
         except Exception as e:
-            self.notify(f'Failed to start socks server', 'ERROR')
+            self.notify(f'Failed to start socks server: {e}', 'ERROR')
             self.proxy = False
         socks_server.settimeout(1.0)
         socks_server.listen(5)

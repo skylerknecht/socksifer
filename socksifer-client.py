@@ -116,8 +116,9 @@ def socks_connect(data):
             'bind_port': bind_port,
             'client_id': client_id
         })
+        threading.Thread(target=stream, daemon=True, args=(client_id,)).start()
     sio.emit('socks_connect_results', results)
-    threading.Thread(target=stream, daemon=True, args=(client_id,)).start()
+
 
 
 if len(sys.argv) != 2:

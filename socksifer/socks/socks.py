@@ -157,7 +157,7 @@ class SocksClient:
         network_delay = time.time() - self.socks_connect_sent
         if network_delay < 0.1:
             network_delay_notification = 'SUCCESS'
-        elif 0.1 >= network_delay < 1:
+        elif 0.1 <= network_delay < 1:
             network_delay_notification = 'INFORMATION'
         else:
             network_delay_notification = 'WARN'

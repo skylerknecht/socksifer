@@ -105,7 +105,7 @@ class SocksClient:
             'port': port,
             'client_id': self.client_id
         })
-        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} sent socks_connect request for {address}:{str(port)}'
+        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} scheduled socks_connect request for {address}:{str(port)}'
                                          , 'INFORMATION')
         self.socks_tasks.append(self.socks_task('socks_connect', data))
 
@@ -115,13 +115,17 @@ class SocksClient:
         while self.streaming:
             r, w, e = select.select([self.client], [self.client], [])
             if self.client in w and len(self.downstream_buffer) > 0:
-                self.client.send(self.downstream_buffer.pop(0))
+                data = self.downstream_buffer.pop(0)
+                if get_debug_level() >= 2: self.notify(
+                    f'Client {self.client_id} sent {len(data)} byte(s) to downstream', 'INFORMATION')
+                self.client.send(data)
                 continue
             if self.client in r:
                 try:
                     data = self.client.recv(4096)
                     if len(data) <= 0:
                         break
+                    if get_debug_level() >= 2: self.notify(f'Client {self.client_id} scheduled a {len(data)} byte(s) upstream', 'INFORMATION')
                     socks_upstream_task = json.dumps({
                         'client_id': self.client_id,
                         'data': bytes_to_base64(data)

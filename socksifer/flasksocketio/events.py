@@ -3,7 +3,7 @@ import random
 import threading
 
 from flask import request
-from flask_socketio import disconnect, emit
+from flask_socketio import emit
 from functools import wraps
 from socksifer import get_debug_level
 from socksifer import socketio as sio_server

@@ -31,7 +31,7 @@ class CLI:
     def notify(self, *args):
         display('\r', end='')
         display(*args)
-        display(self.prompt, end='')
+        display(self.prompt + readline.get_line_buffer(), end='')
         sys.stdout.flush()
 
     def run(self, arguments=None):

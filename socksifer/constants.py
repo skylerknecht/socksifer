@@ -1,4 +1,4 @@
-MESSAGE = "Welcome to connect, please choose the tool you'd like to use."
+MESSAGE = "Welcome to socksifer, the socksiest proxy around."
 BANNER = f"""
 +{'-'*(len(MESSAGE)+2)}+
 | {MESSAGE} |

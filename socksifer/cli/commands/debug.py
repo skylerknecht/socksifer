@@ -8,7 +8,7 @@ class Debug(Command):
         super().__init__(
             'debug',
             'Set the debug level.',
-            {}
+            {'level': 'The debug level'}
         )
 
     def execute_command(self, parameters, notify):

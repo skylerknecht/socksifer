@@ -78,7 +78,6 @@ class SocksClient:
 
     def negotiate_method(self):
         ver, nmethods = self.client.recv(2)
-
         methods = [ord(self.client.recv(1)) for _ in range(nmethods)]
         if 0 not in methods:
             self.client.sendall(bytes([self.SOCKS_VERSION, int('FF', 16)]))
@@ -89,16 +88,16 @@ class SocksClient:
 
     def parse_socks_connect(self):
         if not self.negotiate_method():
-            display(f'Client {self.client_id} failed to negotiate method.', 'ERROR')
+            self.notify(f'Client {self.client_id} failed to negotiate method.', 'ERROR')
             self.client.close()
             return
         if not self.negotiate_cmd():
-            display(f'Client {self.client_id} failed to negotiate cmd.', 'ERROR')
+            self.notify(f'Client {self.client_id} failed to negotiate cmd.', 'ERROR')
             self.client.close()
             return
         atype, address, port = self.parse_address()
         if not address:
-            display(f'Client {self.client_id} failed to negotiate address.', 'ERROR')
+            self.notify(f'Client {self.client_id} failed to negotiate address.', 'ERROR')
             self.client.close()
             return
         data = json.dumps({
@@ -201,7 +200,7 @@ class SocksServer:
         while self.proxy:
             try:
                 client, addr = socks_server.accept()
-            except socket.error as e:
+            except socket.error:
                 continue
             socks_client = SocksClient(client, self.notify)
             socks_client.parse_socks_connect()
@@ -210,5 +209,5 @@ class SocksServer:
 
     def shutdown(self):
         for socks_client in self.socks_clients:
-            socks_client.stream = False
+            socks_client.streaming = False
         self.proxy = False

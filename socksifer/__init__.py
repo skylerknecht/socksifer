@@ -1,10 +1,10 @@
-from collections import namedtuple
 from flask import Flask
 from flask_socketio import SocketIO
 
-socketio = SocketIO()
-flask_app = Flask('Socksifer')
+__version__ = '0.0.0'
 debug_level = 0
+flask_app = Flask('Socksifer')
+socketio = SocketIO()
 
 
 def set_debug_level(level: int):

@@ -15,11 +15,10 @@ COLORS = {
 
 NOTIFICATIONS = {
     'DEFAULT': '',
-    'WARN': f"{COLORS['bold']}[!]{COLORS['reset']} ",
+    'WARN': f"{COLORS['yellow']}[!]{COLORS['reset']} ",
     'ERROR': f"{COLORS['red']}[-]{COLORS['reset']} ",
     'INFORMATION': f"{COLORS['blue']}[*]{COLORS['reset']} ",
     'SUCCESS': f"{COLORS['green']}[+]{COLORS['reset']} ",
-    'STATUS': f"{COLORS['yellow']}[#]{COLORS['reset']} "
 }
 
 ORIGINAL_THREAD_IDENTIFIER = threading.current_thread().ident

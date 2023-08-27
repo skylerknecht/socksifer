@@ -156,6 +156,7 @@ class SocksClient:
             return
         network_delay = time.time() - self.socks_connect_sent
         if get_debug_level() >= 1: self.notify(f"The network delay is {network_delay:.6f} seconds", 'INFORMATION')
+        if get_debug_level() >= 1 and network_delay >= 1: self.notify(f"The network delay is high and may cause timeouts", 'WARN')
         self.stream()
 
     def handle_socks_downstream_results(self, results):

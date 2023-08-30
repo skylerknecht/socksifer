@@ -1,12 +1,10 @@
-import flask.cli
+import flask
 import os
-import threading
 
 from .events import Events
 from socksifer import flask_app
 from socksifer import socketio as sio_server
 from socksifer.cli import command_line_interface
-from socksifer.generate import string_identifier
 
 
 class FlaskSocketIOServer:

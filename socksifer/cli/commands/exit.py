@@ -11,5 +11,5 @@ class Exit(Command):
             {}
         )
 
-    def execute_command(self, parameters, notify):
+    def execute_command(self, parameters, notify, set_cli_properties):
         sys.exit()

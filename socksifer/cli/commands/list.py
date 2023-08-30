@@ -13,7 +13,7 @@ class List(Command):
             {}
         )
 
-    def execute_command(self, parameters, notify):
+    def execute_command(self, parameters, notify, set_cli_properties):
         socks_servers = []
         for socks_server in socks_server_manager.socks_servers.values():
             socks_servers.append({

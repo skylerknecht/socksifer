@@ -13,7 +13,6 @@ socks_connections = {}
 upstream_buffer = {}
 
 
-
 def base64_to_bytes(data) -> bytes:
     """
     Base64 encode a bytes object.
@@ -80,7 +79,7 @@ def socks_connect(data):
     port = data['port']
     client_id = data['client_id']
     socks_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socks_connection.settimeout(1.0)
+    socks_connection.settimeout(5.0)
     rep = None
     try:
         socks_connection.connect((address, port))
@@ -118,7 +117,6 @@ def socks_connect(data):
         })
         threading.Thread(target=stream, daemon=True, args=(client_id,)).start()
     sio.emit('socks_connect_results', results)
-
 
 
 if len(sys.argv) != 2:

@@ -28,7 +28,7 @@ class CommandsManager:
             command.help()
             return
 
-        command.execute_command(tokens[1:], notify)
+        command.execute_command(tokens[1:], notify, set_cli_properties)
 
     def help_menu(self):
         for command in self.commands.values():

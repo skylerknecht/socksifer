@@ -13,7 +13,7 @@ class Shutdown(Command):
             {}
         )
 
-    def execute_command(self, parameters, notify):
+    def execute_command(self, parameters, notify, set_cli_properties):
         if len(parameters) != 1:
             display('Invalid parameters.', 'ERROR')
             return

@@ -128,6 +128,7 @@ class SocksClient:
                     if len(data) <= 0:
                         break
                     if get_debug_level() >= 3: self.notify(f'Client {self.client_id} scheduled a {len(data)} byte upstream', 'INFORMATION')
+                    if get_debug_level() >= 4: self.notify(data)
                     socks_upstream_task = json.dumps({
                         'client_id': self.client_id,
                         'data': bytes_to_base64(data)

@@ -18,5 +18,5 @@ class Command:
     def example(self) -> str:
         return ''
 
-    def execute_command(self, parameters, notify):
+    def execute_command(self, parameters, notify, set_cli_properties):
         raise NotImplementedError(f'{self.name} command has not implemented execute_command')

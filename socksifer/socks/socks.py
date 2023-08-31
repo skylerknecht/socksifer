@@ -106,8 +106,9 @@ class SocksClient:
             'port': port,
             'client_id': self.client_id
         })
-        if get_debug_level() >= 1: self.notify(f'Client {self.client_id} scheduled socks_connect request for {address}:{str(port)}'
-                                         , 'INFORMATION')
+        if get_debug_level() >= 1: self.notify(
+            f'Client {self.client_id} scheduled socks_connect request for {address}:{str(port)}'
+            , 'INFORMATION')
         self.socks_tasks.append(self.socks_task('socks_connect', data))
         self.socks_connect_sent = time.time()
 
@@ -118,22 +119,24 @@ class SocksClient:
             r, w, e = select.select([self.client], [self.client], [])
             if self.client in w and len(self.downstream_buffer) > 0:
                 data = self.downstream_buffer.pop(0)
+                self.client.send(data)
                 if get_debug_level() >= 3: self.notify(
                     f'Client {self.client_id} sent a {len(data)} byte downstream', 'INFORMATION')
-                self.client.send(data)
+                if get_debug_level() >= 4: self.notify(data)
                 continue
             if self.client in r:
                 try:
                     data = self.client.recv(4096)
                     if len(data) <= 0:
                         break
-                    if get_debug_level() >= 3: self.notify(f'Client {self.client_id} scheduled a {len(data)} byte upstream', 'INFORMATION')
-                    if get_debug_level() >= 4: self.notify(data)
                     socks_upstream_task = json.dumps({
                         'client_id': self.client_id,
                         'data': bytes_to_base64(data)
                     })
                     self.socks_tasks.append(self.socks_task('socks_upstream', socks_upstream_task))
+                    if get_debug_level() >= 3: self.notify(
+                        f'Client {self.client_id} scheduled a {len(data)} byte upstream', 'INFORMATION')
+                    if get_debug_level() >= 4: self.notify(data)
                 except Exception as e:
                     break
         if get_debug_level() >= 1: self.notify(f'Client {self.client_id} stopped streaming', 'INFORMATION')
@@ -145,7 +148,8 @@ class SocksClient:
         rep = results['rep']
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None
-        if get_debug_level() >= 2: self.notify(f'Client {self.client_id} received socks_connect reply: {results}', 'INFORMATION')
+        if get_debug_level() >= 2: self.notify(f'Client {self.client_id} received socks_connect reply: {results}',
+                                               'INFORMATION')
         try:
             self.client.sendall(self.generate_reply(atype, rep, bind_addr, bind_port))
             if get_debug_level() >= 1: self.notify(f'Client {self.client_id} sent socks_connect', 'SUCCESS')
@@ -161,7 +165,8 @@ class SocksClient:
             network_delay_notification = 'INFORMATION'
         else:
             network_delay_notification = 'WARN'
-        if get_debug_level() >= 1: self.notify(f"The network delay is {network_delay:.6f} seconds", network_delay_notification)
+        if get_debug_level() >= 1: self.notify(f"The network delay is {network_delay:.6f} seconds",
+                                               network_delay_notification)
         self.stream()
 
     def handle_socks_downstream_results(self, results):
@@ -172,8 +177,8 @@ class SocksClient:
                 return
             self.downstream_buffer.append(data)
             if get_debug_level() >= 3: self.notify(f'Scheduled {len(data)} byte downstream.', 'INFORMATION')
-        except socket.error as e:
-            if get_debug_level() >= 1: self.notify(f"Failed to send downstream results {e}", 'ERROR')
+        except Exception as e:
+            if get_debug_level() >= 1: self.notify(f"Failed to schedule downstream {e}", 'ERROR')
             return
 
 

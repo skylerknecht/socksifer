@@ -183,7 +183,7 @@ class SocksClient:
 
 
 class SocksServer:
-    proxy = True
+    listening = True
     socks_client = namedtuple('SocksClient', ['thread', 'socks_client'])
 
     def __init__(self, address, port, notify):
@@ -200,10 +200,10 @@ class SocksServer:
             self.notify(f'{self.server_id} is listening on {self.address}:{self.port}', 'SUCCESS')
         except Exception as e:
             self.notify(f'Failed to start socks server: {e}', 'ERROR')
-            self.proxy = False
+            self.listening = False
         socks_server.settimeout(1.0)
         socks_server.listen(5)
-        while self.proxy:
+        while self.listening:
             try:
                 client, addr = socks_server.accept()
             except socket.error:
@@ -216,4 +216,4 @@ class SocksServer:
     def shutdown(self):
         for socks_client in self.socks_clients:
             socks_client.streaming = False
-        self.proxy = False
+        self.listening = False

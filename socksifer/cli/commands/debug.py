@@ -40,7 +40,7 @@ class Debug(Command):
     def example(self):
         return textwrap.dedent('''
         debug levels:        
-            1: socks_connect, client started streaming and stopped streaming.
+            1: socks_connect, socks_connect delay, client started streaming and stopped streaming.
             2: socks_connect data
             3: socks_upstream and socks_downstream
             4: socks_upstream and socks_downstream data

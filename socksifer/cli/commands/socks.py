@@ -1,12 +1,14 @@
+import time
+
 from .commands import Command
 from socksifer.output import display
 from socksifer.socks import socks_server_manager
 
 
-class List(Command):
+class Socks(Command):
     def __init__(self):
         super().__init__(
-            'list',
+            'socks',
             'List all of the socks proxies.',
             {}
         )
@@ -14,19 +16,26 @@ class List(Command):
     def execute_command(self, parameters, notify, set_cli_properties):
         socks_servers = []
         for socks_server in socks_server_manager.socks_servers.values():
+            listening = socks_server.socks_server.listening
+            if socks_server.socks_server.latency:
+                check_in_delta = (time.time() - socks_server.socks_server.check_in) * 1000
+                connected = listening and check_in_delta <= (socks_server.socks_server.latency * 1000)
+            else:
+                connected = False
             socks_servers.append({
                 'id': socks_server.socks_server.server_id,
+                'connected': connected,
                 'address': socks_server.socks_server.address,
                 'port': str(socks_server.socks_server.port),
-                'listening': str(socks_server.socks_server.listening)
+                'latency': self.latency_to_string(socks_server.socks_server.latency)
             })
         if len(socks_servers) == 0:
             display('There are no socks servers', 'INFORMATION')
             return
-        display(self.create_table('SERVERS', ['id', 'address', 'port', 'listening'], socks_servers))
+        display(self.create_table('SERVERS', socks_servers[0].keys(), socks_servers))
 
     @staticmethod
-    def create_table(title, columns: list, items: list[dict]) -> str:
+    def create_table(title, columns: list, items: list) -> str:
         # Calculate the maximum width for each column
         col_widths = [len(col) for col in columns]
         for item in items:
@@ -47,3 +56,16 @@ class List(Command):
         # Combine header and rows to form the table
         table = header + ''.join(rows)
         return table
+
+    @staticmethod
+    def latency_to_string(latency):
+        if not latency:
+            return '....'
+        if latency < 1:
+            return f'{int(latency * 1000)} ms'
+        elif latency < 60:
+            return f'{latency:.2f} second(s)'
+        elif latency < 3600:
+            return f'{latency / 60:.2f} minute(s)'
+        else:
+            return f'{latency / 3600:.2f} hour(s)'

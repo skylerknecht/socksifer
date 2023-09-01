@@ -1,18 +1,18 @@
 from .debug import Debug
 from .exit import Exit
-from .list import List
+from .socks import Socks
 from .manager import CommandsManager
 from .shutdown import Shutdown
 
 debug = Debug()
 exit = Exit()
-list = List()
+socks = Socks()
 shutdown = Shutdown()
 
 commands = {
     debug.name: debug,
     exit.name: exit,
-    list.name: list,
+    socks.name: socks,
     shutdown.name: shutdown
 }
 

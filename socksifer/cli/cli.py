@@ -1,5 +1,6 @@
 import readline
 import sys
+import threading
 
 from .commands import commands, commands_manager
 from socksifer.output import display
@@ -19,7 +20,7 @@ class CLI:
         readline.set_completer_delims(" \t\n\"\\'`@$><=;|&{(")
 
     def listen_for_user_input(self):
-        display('Welcome to the sockiest proxy around, type help or ? to get started')
+        display('Welcome to the socksiest proxy around, type help or ? to get started')
         while True:
             try:
                 user_input = input('\r' + self.prompt)
@@ -44,6 +45,7 @@ class CLI:
             self.prompt = self.PROMPT
             return
         self.prompt = prompt if prompt else self.prompt
+
 
 class Completer:
     # ToDo: we need to change option to command - nomenclature

@@ -70,6 +70,8 @@ def stream(client_id):
                 break
 
 
+
+
 @sio.event
 def socks_connect(data):
     global socks_connections
@@ -128,11 +130,9 @@ sio.connect(sys.argv[1])
 while True:
     time.sleep(0.1)
     try:
-        if server_id:
-            data = json.dumps({
-                'server_id': server_id
-            })
-            sio.emit('socks_request_for_data', data)
+        sio.emit('socks_request_for_data')
     except KeyboardInterrupt:
         sio.disconnect()
         break
+    except socketio.exceptions.BadNamespaceError:
+        sys.exit()

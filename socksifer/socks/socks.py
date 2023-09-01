@@ -7,7 +7,6 @@ from collections import namedtuple
 from socksifer import get_debug_level
 from socksifer.convert import bytes_to_base64, base64_to_bytes
 from socksifer.generate import string_identifier
-from socksifer.output import display
 
 
 class SocksClient:
@@ -165,7 +164,7 @@ class SocksClient:
             network_delay_notification = 'INFORMATION'
         else:
             network_delay_notification = 'WARN'
-        if get_debug_level() >= 1: self.notify(f"The network delay is {network_delay:.6f} seconds",
+        if get_debug_level() >= 1: self.notify(f"The socks_connect network delay is {network_delay:.6f} seconds",
                                                network_delay_notification)
         self.stream()
 
@@ -186,20 +185,22 @@ class SocksServer:
     listening = True
     socks_client = namedtuple('SocksClient', ['thread', 'socks_client'])
 
-    def __init__(self, address, port, notify):
+    def __init__(self, server_id, address, port, notify):
         self.address = address
+        self.check_in = None
+        self.latency = None
         self.notify = notify
         self.port = port
-        self.server_id = string_identifier()
+        self.server_id = server_id
         self.socks_clients = []
 
     def listen_for_clients(self):
         socks_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             socks_server.bind((self.address, self.port))
-            self.notify(f'{self.server_id} is listening on {self.address}:{self.port}', 'SUCCESS')
+            self.notify(f'{self.server_id} is connected and listening on {self.address}:{self.port}', 'SUCCESS')
         except Exception as e:
-            self.notify(f'Failed to start socks server: {e}', 'ERROR')
+            self.notify(f'{self.server_id} failed to to start socks server: {e}', 'ERROR')
             self.listening = False
         socks_server.settimeout(1.0)
         socks_server.listen(5)

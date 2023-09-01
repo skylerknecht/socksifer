@@ -1,5 +1,5 @@
-
 import threading
+import time
 
 from collections import namedtuple
 from socksifer.output import display
@@ -12,23 +12,32 @@ class SocksManager:
     def __init__(self):
         self.socks_servers = {}
 
+    def check_in_server(self, server_id):
+        socks_server = self.socks_servers[server_id].socks_server
+        if not socks_server.listening:
+            return False
+        if not socks_server.check_in:
+            socks_server.check_in = time.time()
+        else:
+            socks_server.latency = (time.time() - socks_server.check_in)
+            socks_server.check_in = time.time()
+        return True
+
     def create_socks_server(self, *args):
         new_socks_server = SocksServer(*args)
-        socks_server_thread = threading.Thread(target=new_socks_server.listen_for_clients)
-        socks_server_thread.daemon = True
+        socks_server_thread = threading.Thread(target=new_socks_server.listen_for_clients, daemon=True)
         socks_server_thread.start()
         self.socks_servers[new_socks_server.server_id] = self.socks_server(socks_server_thread, new_socks_server)
-        return new_socks_server.server_id
 
-    def shutdown_socks_server(self, server_id):
+    def shutdown_socks_server(self, server_id, notify):
         try:
             _socks_server = self.socks_servers[server_id]
         except KeyError:
-            display(f'Socks server with id {server_id} does not exist.', 'ERROR')
+            notify(f'{server_id} is not a valid server id.', 'ERROR')
             return
         _socks_server.socks_server.shutdown()
         _socks_server.socks_server_thread.join()
-        display(f'Successfully shutdown socks server {server_id}', 'SUCCESS')
+        notify(f'{server_id} successfully shutdown', 'SUCCESS')
 
     def shutdown_socks_servers(self):
         for socks_server in self.socks_servers:
@@ -43,6 +52,9 @@ class SocksManager:
                         socks_client.handle_socks_connect_results(results)
                     if method == 'socks_downstream':
                         socks_client.handle_socks_downstream_results(results)
+
+    def server_is_listening(self, sever_id):
+        return self.socks_servers[sever_id].socks_server.listening
 
     def get_socks_tasks(self, server_id):
         sent_socks_task = []

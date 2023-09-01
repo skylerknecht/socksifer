@@ -18,4 +18,4 @@ class Shutdown(Command):
             display('Invalid parameters.', 'ERROR')
             return
 
-        socks_server_manager.shutdown_socks_server(parameters[0])
+        socks_server_manager.shutdown_socks_server(parameters[0], notify)

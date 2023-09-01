@@ -42,3 +42,11 @@ Reproxy traffic
 ```
 xfreerdp /v:host /u:username /p:pasword /proxy:socks5://127.0.0.1:9066
 ```
+
+
+### ToDo
+
+- [ ] Better threading, should we use async.io?
+- [ ] Is there a better way to handle the check in process to retrieve scheduled socks tasks?
+- [ ] Rewrite socks_server.socks_server to an easier reference
+- [ ] Maybe implement an actual events handler? 

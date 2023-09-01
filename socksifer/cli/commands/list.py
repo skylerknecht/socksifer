@@ -1,5 +1,3 @@
-import ipaddress
-
 from .commands import Command
 from socksifer.output import display
 from socksifer.socks import socks_server_manager

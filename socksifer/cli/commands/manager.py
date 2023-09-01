@@ -14,7 +14,7 @@ class CommandsManager:
         if len(tokens) <= 0:
             return
 
-        if tokens[0] == '?':
+        if tokens[0] == '?' or tokens[0] == 'help':
             self.help_menu()
             return
 

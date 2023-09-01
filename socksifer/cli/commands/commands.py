@@ -10,8 +10,12 @@ class Command:
         if not self.parameters:
             return
         print('\nparameters:')
+        longest_parameter = 0
+        for parameter in self.parameters.keys():
+            if len(parameter) > longest_parameter:
+                longest_parameter = len(parameter)
         for parameter, description in self.parameters.items():
-            print('{:<{}}{:<{}}{}'.format(' ', 4, parameter, 8, description))
+            print('{:<{}}{:<{}}{}'.format(' ', 4, parameter, longest_parameter + 4, description))
         if self.example: print(self.example)
 
     @property

@@ -10,17 +10,15 @@ class CLI:
 
     def __init__(self, prompt):
         self.arguments = None
-        self.output_lock = threading.Lock()
         self.output = []
         self.PROMPT = prompt
         self.prompt = self.PROMPT
 
     def listen_for_user_input(self):
-        display('Welcome to the Socksifer CLI, type help or ? to get started')
+        display('Welcome to the sockiest proxy around, type help or ? to get started')
         while True:
             try:
-                with self.output_lock:
-                    user_input = input('\r' + self.prompt)
+                user_input = input('\r' + self.prompt)
                 if not user_input:
                     continue
                 commands_manager.execute_command(user_input, self.set_cli_properties, self.notify)

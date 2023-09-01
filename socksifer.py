@@ -13,7 +13,6 @@ if __name__ == '__main__':
                                      usage=argparse.SUPPRESS)
     parser.add_argument('--ip', metavar='ip', help='server ip', default='127.0.0.1')
     parser.add_argument('--port', metavar='port', help='server port', default=1337)
-    parser.add_argument('--ssl', nargs=2, metavar=('CERT', 'KEY'), help='use ssl')
     parser.add_argument('--version', action='store_true', help='display the current version')
     args = parser.parse_args()
     if args.version:

@@ -68,4 +68,8 @@ class Events:
 
     @json_event_handler
     def socks_downstream_results(self, results):
-        socks_server_manager.handle_socks_task_results('socks_downstream', results)
+        threading.Thread(
+            target=socks_server_manager.handle_socks_task_results,
+            args=('socks_downstream', results,),
+            daemon=True
+        ).start()

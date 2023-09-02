@@ -108,6 +108,7 @@ class SocksClient:
         if get_debug_level() >= 1: self.notify(
             f'Client {self.client_id} scheduled socks_connect request for {address}:{str(port)}'
             , 'INFORMATION')
+        if get_debug_level() >= 2: self.notify(data)
         self.socks_tasks.append(self.socks_task('socks_connect', data))
         self.socks_connect_sent = time.time()
 
@@ -143,7 +144,7 @@ class SocksClient:
         self.client.close()
 
     def handle_socks_connect_results(self, results):
-        atype = results['atype']
+        atype = 1
         rep = results['rep']
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None

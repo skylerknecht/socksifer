@@ -3,9 +3,9 @@ import sys
 import threading
 
 from socksifer import __version__ as version
-from socksifer.cli import command_line_interface
+from socksifer.client import command_line_interface
 from socksifer.constants import BANNER
-from socksifer.flasksocketio import flasksocketio_server
+from socksifer.server import server
 
 
 if __name__ == '__main__':
@@ -18,5 +18,5 @@ if __name__ == '__main__':
     if args.version:
         print(version)
         sys.exit()
-    threading.Thread(target=flasksocketio_server.run, daemon=True, args=(args,)).start()
+    threading.Thread(target=server.run, daemon=True, args=(args,)).start()
     command_line_interface.run()

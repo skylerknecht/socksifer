@@ -2,7 +2,6 @@ import threading
 import time
 
 from collections import namedtuple
-from socksifer.output import display
 from .socks import SocksServer
 
 
@@ -34,6 +33,8 @@ class SocksManager:
             _socks_server = self.socks_servers[server_id]
         except KeyError:
             notify(f'{server_id} is not a valid server id.', 'ERROR')
+            return
+        if not _socks_server.socks_server.listening:
             return
         _socks_server.socks_server.shutdown()
         _socks_server.socks_server_thread.join()

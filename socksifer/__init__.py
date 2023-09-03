@@ -1,10 +1,8 @@
-from flask import Flask
-from flask_socketio import SocketIO
+import socketio
 
 __version__ = '0.0.0'
 debug_level = 0
-flask_app = Flask('Socksifer')
-socketio = SocketIO()
+sio_server = socketio.AsyncServer(async_mode='aiohttp')
 
 
 def set_debug_level(level: int):

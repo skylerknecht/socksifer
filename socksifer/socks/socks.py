@@ -2,6 +2,7 @@ import json
 import select
 import socket
 import time
+import threading
 
 from collections import namedtuple
 from socksifer import get_debug_level
@@ -211,7 +212,7 @@ class SocksServer:
             except socket.error:
                 continue
             socks_client = SocksClient(client, self.notify)
-            socks_client.parse_socks_connect()
+            threading.Thread(target=socks_client.parse_socks_connect, daemon=True).start()
             self.socks_clients.append(socks_client)
         socks_server.close()
 

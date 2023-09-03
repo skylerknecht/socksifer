@@ -6,7 +6,7 @@ from socksifer import sio_server
 from socksifer.client import command_line_interface
 from socksifer.socks import socks_server_manager
 
-
+import time
 class SocketIOServer:
     NAME = 'SocketIO Server'
 
@@ -17,7 +17,7 @@ class SocketIOServer:
     async def ping():
         while True:
             await sio_server.sleep(1)
-            await sio_server.emit('ping')
+            await sio_server.emit('ping', time.time())
 
     @staticmethod
     async def send_tasks():

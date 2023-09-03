@@ -1,7 +1,7 @@
-import asyncio
 import json
 import random
 import threading
+import time
 
 from functools import wraps
 from socksifer import sio_server
@@ -34,8 +34,9 @@ class Events:
         socks_server_manager.shutdown_socks_server(sid, command_line_interface.notify)
 
     @staticmethod
-    def pong(sid):
-        if not socks_server_manager.check_in_server(sid):
+    def pong(sid, data):
+        latency = time.time() - data
+        if not socks_server_manager.check_in_server(sid, latency):
             sio_server.disconnect(sid)
             return
 

@@ -2,7 +2,7 @@ import socketio
 
 __version__ = '0.0.0'
 debug_level = 0
-sio_server = socketio.AsyncServer(async_mode='aiohttp')
+sio_server = socketio.AsyncServer(async_mode='aiohttp', async_handlers=True)
 
 
 def set_debug_level(level: int):

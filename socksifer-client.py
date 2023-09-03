@@ -122,8 +122,8 @@ def socks_connect(data):
 
 
 @sio.event
-def ping():
-    sio.emit('pong')
+def ping(data):
+    sio.emit('pong', data)
 
 
 if len(sys.argv) != 2:

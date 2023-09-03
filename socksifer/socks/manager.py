@@ -11,14 +11,14 @@ class SocksManager:
     def __init__(self):
         self.socks_servers = {}
 
-    def check_in_server(self, server_id):
+    def check_in_server(self, server_id, latency):
         socks_server = self.socks_servers[server_id].socks_server
         if not socks_server.listening:
             return False
         if not socks_server.check_in:
             socks_server.check_in = time.time()
         else:
-            socks_server.latency = (time.time() - socks_server.check_in) - 1
+            socks_server.latency = latency
             socks_server.check_in = time.time()
         return True
 

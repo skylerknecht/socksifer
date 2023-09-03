@@ -1,4 +1,5 @@
 import asyncio
+import ssl
 
 from .events import Events
 from aiohttp import web
@@ -42,7 +43,12 @@ class SocketIOServer:
         loop.create_task(self.ping())
         command_line_interface.notify(f'Starting {self.NAME} on http://{arguments.ip}:{arguments.port}/', 'INFORMATION')
         try:
-            site = web.TCPSite(runner, arguments.ip, arguments.port)
+            if arguments.ssl:
+                ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                ssl_context.load_cert_chain(arguments.ssl[0], arguments.ssl[1])
+                site = web.TCPSite(runner, arguments.ip, arguments.port, ssl_context=ssl_context)
+            else:
+                site = web.TCPSite(runner, arguments.ip, arguments.port)
             loop.run_until_complete(site.start())
             loop.run_forever()
         except PermissionError:

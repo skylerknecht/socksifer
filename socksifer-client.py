@@ -4,11 +4,17 @@ import select
 import socket
 import socketio
 import threading
-import time
 import sys
+import requests
+import urllib3
+
+# Disable SSL certificate verification for the underlying requests session
+urllib3.disable_warnings()
 
 server_id = ''
-sio = socketio.Client()
+http_session = requests.Session()
+http_session.verify = False
+sio = socketio.Client(http_session=http_session)
 socks_connections = {}
 upstream_buffer = {}
 
@@ -129,5 +135,6 @@ def ping(data):
 if len(sys.argv) != 2:
     print(f'Incorrect arguments provided. Please run {sys.argv[0]} http://server-url:port/')
     sys.exit()
+
 
 sio.connect(sys.argv[1])

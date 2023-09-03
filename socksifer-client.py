@@ -121,18 +121,13 @@ def socks_connect(data):
     sio.emit('socks_connect_results', results)
 
 
+@sio.event
+def ping():
+    sio.emit('pong')
+
+
 if len(sys.argv) != 2:
     print(f'Incorrect arguments provided. Please run {sys.argv[0]} http://server-url:port/')
     sys.exit()
 
 sio.connect(sys.argv[1])
-
-while True:
-    time.sleep(0.1)
-    try:
-        sio.emit('socks_request_for_data')
-    except KeyboardInterrupt:
-        sio.disconnect()
-        break
-    except socketio.exceptions.BadNamespaceError:
-        sys.exit()

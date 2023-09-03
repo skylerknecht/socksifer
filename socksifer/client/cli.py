@@ -1,6 +1,5 @@
 import readline
 import sys
-import threading
 
 from .commands import commands, commands_manager
 from socksifer.output import display

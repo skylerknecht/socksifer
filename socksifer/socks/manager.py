@@ -18,7 +18,7 @@ class SocksManager:
         if not socks_server.check_in:
             socks_server.check_in = time.time()
         else:
-            socks_server.latency = (time.time() - socks_server.check_in)
+            socks_server.latency = (time.time() - socks_server.check_in) - 1
             socks_server.check_in = time.time()
         return True
 

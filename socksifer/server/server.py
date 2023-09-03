@@ -4,6 +4,7 @@ from .events import Events
 from aiohttp import web
 from socksifer import sio_server
 from socksifer.client import command_line_interface
+from socksifer.socks import socks_server_manager
 
 
 class SocketIOServer:
@@ -11,6 +12,22 @@ class SocketIOServer:
 
     def __init__(self):
         pass
+
+    @staticmethod
+    async def ping():
+        while True:
+            await sio_server.sleep(1)
+            await sio_server.emit('ping')
+
+    @staticmethod
+    async def send_tasks():
+        while True:
+            await sio_server.sleep(0.1)
+            for socks_server in socks_server_manager.socks_servers.values():
+                for socks_client in socks_server.socks_server.socks_clients:
+                    while socks_client.socks_tasks:
+                        socks_task = socks_client.socks_tasks.pop(0)
+                        await sio_server.emit(socks_task.event, socks_task.data, room=socks_server.socks_server.server_id)
 
     def run(self, arguments):
         # https://stackoverflow.com/questions/51610074/how-to-run-an-aiohttp-server-in-a-thread
@@ -21,9 +38,10 @@ class SocketIOServer:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         loop.run_until_complete(runner.setup())
+        loop.create_task(self.send_tasks())
+        loop.create_task(self.ping())
         command_line_interface.notify(f'Starting {self.NAME} on http://{arguments.ip}:{arguments.port}/', 'INFORMATION')
         try:
-            #web.run_app(app, host=arguments.ip, port=arguments.port)
             site = web.TCPSite(runner, arguments.ip, arguments.port)
             loop.run_until_complete(site.start())
             loop.run_forever()

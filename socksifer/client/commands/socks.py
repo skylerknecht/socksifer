@@ -17,9 +17,11 @@ class Socks(Command):
         socks_servers = []
         for socks_server in socks_server_manager.socks_servers.values():
             listening = socks_server.socks_server.listening
+            print(listening)
+            print(socks_server.socks_server.latency)
             if socks_server.socks_server.latency:
-                check_in_delta = (time.time() - socks_server.socks_server.check_in) * 1000
-                connected = listening and check_in_delta <= (socks_server.socks_server.latency * 1000)
+                check_in_delta = (time.time() - socks_server.socks_server.check_in) - 1
+                connected = listening and check_in_delta <= (socks_server.socks_server.latency * 3)
             else:
                 connected = False
             socks_servers.append({

@@ -10,10 +10,28 @@ class Socks(Command):
         super().__init__(
             'socks',
             'List all of the socks proxies.',
-            {}
+            {
+                'server-id': 'What server should we display the clients for'
+            }
         )
 
     def execute_command(self, parameters, notify, set_cli_properties):
+        if len(parameters) == 1:
+            if parameters[0] not in socks_server_manager.socks_servers.keys():
+                display(f'Socks server {parameters[0]} does not exist', 'INFORMATION')
+                return
+            socks_server = socks_server_manager.socks_servers[parameters[0]]
+            socks_clients = []
+            for socks_client in socks_server.socks_server.socks_clients:
+                socks_clients.append({
+                    'id' : socks_client.client_id,
+                    "streaming" : socks_client.streaming
+                })
+            if len(socks_clients) == 0:
+                display('There are no socks clients', 'INFORMATION')
+                return
+            display(self.create_table('CLIENTS', socks_clients[0].keys(), socks_clients))
+            return
         socks_servers = []
         for socks_server in socks_server_manager.socks_servers.values():
             listening = socks_server.socks_server.listening

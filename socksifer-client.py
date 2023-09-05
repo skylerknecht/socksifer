@@ -75,9 +75,6 @@ def stream(client_id):
             except:
                 break
 
-
-
-
 @sio.event
 def socks_connect(data):
     global socks_connections
@@ -87,7 +84,7 @@ def socks_connect(data):
     port = data['port']
     client_id = data['client_id']
     socks_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socks_connection.settimeout(5.0)
+    socks_connection.settimeout(0.1)
     rep = None
     try:
         socks_connection.connect((address, port))
@@ -123,6 +120,7 @@ def socks_connect(data):
             'bind_port': bind_port,
             'client_id': client_id
         })
+
         threading.Thread(target=stream, daemon=True, args=(client_id,)).start()
     sio.emit('socks_connect_results', results)
 

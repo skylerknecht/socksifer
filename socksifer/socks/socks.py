@@ -2,10 +2,8 @@ import json
 import select
 import socket
 import time
-import threading
 
 from collections import namedtuple
-from concurrent.futures import ThreadPoolExecutor
 from socksifer import get_debug_level
 from socksifer.convert import bytes_to_base64, base64_to_bytes
 from socksifer.generate import string_identifier
@@ -207,7 +205,6 @@ class SocksServer:
             self.listening = False
         socks_server.settimeout(1.0)
         socks_server.listen(10)
-        executor = ThreadPoolExecutor(max_workers=10)
         while self.listening:
             try:
                 client, addr = socks_server.accept()
@@ -215,7 +212,7 @@ class SocksServer:
                 continue
             socks_client = SocksClient(client, self.notify)
             self.socks_clients.append(socks_client)
-            executor.submit(socks_client.parse_socks_connect)
+            socks_client.parse_socks_connect()
         socks_server.close()
 
     def shutdown(self):

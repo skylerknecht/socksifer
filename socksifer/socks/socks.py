@@ -147,7 +147,7 @@ class SocksClient:
         self.client.close()
 
     def handle_socks_connect_results(self, results):
-        atype = results['atype']
+        atype = 1 # Unsure if this is the atype that we binded to or that we used
         rep = results['rep']
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None

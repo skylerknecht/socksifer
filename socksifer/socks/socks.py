@@ -121,7 +121,7 @@ class SocksClient:
                 data = self.downstream_buffer.pop(0)
                 self.client.send(data)
                 if get_debug_level() >= 3: self.notify(
-                    f'Client {self.client_id} sent a {len(data)} byte downstream', 'INFORMATION')
+                    f'Client {self.client_id} sent a {len(data)} byte downstream', 'SUCCESS')
                 if get_debug_level() >= 4: self.notify(data)
                 continue
             if self.client in r:
@@ -144,7 +144,7 @@ class SocksClient:
         self.client.close()
 
     def handle_socks_connect_results(self, results):
-        atype = 1
+        atype = results['atype']
         rep = results['rep']
         bind_addr = results['bind_addr'] if results['bind_addr'] else None
         bind_port = int(results['bind_port']) if results['bind_port'] else None
@@ -157,11 +157,10 @@ class SocksClient:
             if get_debug_level() >= 1: self.notify(f'Client {self.client_id} could not send sock_connect: {e}', 'ERROR')
             return
         if not bind_addr:
+            self.client.close()
             return
         network_delay = time.time() - self.socks_connect_sent
-        if network_delay < 0.1:
-            network_delay_notification = 'SUCCESS'
-        elif 0.1 <= network_delay < 1:
+        if network_delay < 1:
             network_delay_notification = 'INFORMATION'
         else:
             network_delay_notification = 'WARN'
@@ -170,15 +169,15 @@ class SocksClient:
         self.stream()
 
     def handle_socks_downstream_results(self, results):
-        if get_debug_level() >= 3: self.notify('Received downstream results', 'INFORMATION')
         try:
             data = base64_to_bytes(results['data'])
             if len(data) == 0:
+                if get_debug_level() >= 1: self.notify(f"Client {results['client_id']} received an empty downstream", 'ERROR')
                 return
             self.downstream_buffer.append(data)
-            if get_debug_level() >= 3: self.notify(f'Scheduled {len(data)} byte downstream.', 'INFORMATION')
+            if get_debug_level() >= 3: self.notify(f"Client {results['client_id']} received {len(data)} byte downstream.", 'INFORMATION')
         except Exception as e:
-            if get_debug_level() >= 1: self.notify(f"Failed to schedule downstream {e}", 'ERROR')
+            if get_debug_level() >= 1: self.notify(f"Client {results['client_id']} failed to schedule downstream {e}", 'ERROR')
             return
 
 

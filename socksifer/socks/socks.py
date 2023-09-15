@@ -76,7 +76,10 @@ class SocksClient:
         return cmd == 1
 
     def negotiate_method(self):
-        ver, nmethods = self.client.recv(2)
+        try:
+            ver, nmethods = self.client.recv(2)
+        except Exception:
+            return False
         methods = [ord(self.client.recv(1)) for _ in range(nmethods)]
         if 0 not in methods:
             self.client.sendall(bytes([self.SOCKS_VERSION, int('FF', 16)]))
